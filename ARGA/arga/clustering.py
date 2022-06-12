@@ -5,7 +5,8 @@ import os
 
 # Train on CPU (hide GPU) due to memory constraints
 os.environ['CUDA_VISIBLE_DEVICES'] = ""
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 from metrics import clustering_metrics
 from constructor import get_placeholder, get_model, format_data, get_optimizer, update
 # Settings

@@ -48,7 +48,7 @@ def mask_test_edges(adj):
     num_val = int(np.floor(edges.shape[0] / 20.))
 
     all_edge_idx = range(edges.shape[0])
-    np.random.shuffle(all_edge_idx)
+    np.random.shuffle(list(all_edge_idx))
     val_edge_idx = all_edge_idx[:num_val]
     test_edge_idx = all_edge_idx[num_val:(num_val + num_test)]
     test_edges = edges[test_edge_idx]
