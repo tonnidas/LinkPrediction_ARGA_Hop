@@ -16,6 +16,16 @@ def sample_mask(idx, l):
     mask[idx] = 1
     return np.array(mask, dtype=np.bool)
 
+# Params:
+# dataset = name of the dataset
+# Return values:
+# adj = bidirection adj metrix of size (num_nodes, num_nodes), for cora (2708, 2708)
+# features = attributes of all nodes of size (num_nodes, num_attributes), for cora (2708, 1433)
+# y_test = one-hot labels of test data of size (num_nodes, num_labels) where last num_test_data rows are non-zero, for cora size is (2708, 7) and last 1000 rows are non-zero
+# tx = attributes of test data of size (num_test_data, num_attributes), for cora (1000, 1433)
+# ty = one-hot labels of test_data of size (num_test_data, num_labels), for cora size is (1000, 7)
+# test_maks = an boolean array of size num_nodes where last num_test_data values are true, for cora size is 2708 and last 1000 values are true
+# true_labels = reverse one-hot of all nodes, an array of size num_nodes, for cora size is 2708
 def load_data(dataset):
     # load the data: x, tx, allx, graph
     names = ['x', 'y', 'tx', 'ty', 'allx', 'ally', 'graph']
@@ -25,6 +35,13 @@ def load_data(dataset):
     x, y, tx, ty, allx, ally, graph = tuple(objects)
     test_idx_reorder = parse_index_file("data/ind.{}.test.index".format(dataset))
     test_idx_range = np.sort(test_idx_reorder)
+
+    # To see how the dataset looks like
+    # print("len(x)", x.shape[0], "col(x)", x.shape[1], "x[0]\n", x[0], "\nx[1707]", x[-1])
+    # print("len(tx)", tx.shape[0], "col(tx)", tx.shape[1], "tx[0]\n", tx[0], "\ntx[99]\n", tx[99])
+    # print("len(ty)", len(ty), "col(ty)", len(ty[0]), "ty[0]\n", ty[0], "\nty[99]\n", ty[99])
+    # print("len(allx)", allx.shape[0], "col(allx)", allx.shape[1], "allx[0]\n", allx[0], "\nallx[99]\n", allx[-1])
+    # print("len(graph)", len(graph), "len(test_idx_reorder)", len(test_idx_reorder))
 
     if dataset == 'citeseer':
         # Fix citeseer dataset (there are some isolated nodes in the graph)
@@ -41,16 +58,17 @@ def load_data(dataset):
     features[test_idx_reorder, :] = features[test_idx_range, :]
     adj = nx.adjacency_matrix(nx.from_dict_of_lists(graph))
 
-    labels = np.vstack((ally, ty))
-    labels[test_idx_reorder, :] = labels[test_idx_range, :]
+    # Labels are cluster identity of each feature vector or row
+    labels = np.vstack((ally, ty)) # labels = [[0 0 0 0 1 0 0],[0 0 0 1 0 0 0], ..., [0 0 0 0 1 0 0]], size of labels = 2708
+    labels[test_idx_reorder, :] = labels[test_idx_range, :] # Keeping labels array in ascending order
 
-    idx_test = test_idx_range.tolist()
-    idx_train = range(len(y))
-    idx_val = range(len(y), len(y) + 500)
+    idx_test = test_idx_range.tolist() # List of all test nodes (1708, ... , 2707)
+    idx_train = range(len(y)) # List of all train nodes (0, ... , 139)
+    idx_val = range(len(y), len(y) + 500) # List of 500 nodes (140, ... , 639)
 
-    train_mask = sample_mask(idx_train, labels.shape[0])
-    val_mask = sample_mask(idx_val, labels.shape[0])
-    test_mask = sample_mask(idx_test, labels.shape[0])
+    train_mask = sample_mask(idx_train, labels.shape[0]) # List of size 2708, only 0 to 139 rows are True
+    val_mask = sample_mask(idx_val, labels.shape[0]) # List of size 2708, only 140 to 639 rows are True
+    test_mask = sample_mask(idx_test, labels.shape[0]) # List of size 2708, only 1708 to 2707 are True
 
     y_train = np.zeros(labels.shape)
     y_val = np.zeros(labels.shape)
