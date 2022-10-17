@@ -42,18 +42,23 @@ def get_model(model_str, placeholders, num_features, num_nodes, features_nonzero
 # data_name = name of the dataset
 # Return values:
 # feas = dictionary of features containing following key/values:
-#     adj = adj metrics for training edges only, bidirectional
-#     num_features = number of attributes of each node, for cora 1433
-#     num_nodes = number of nodes in training data
-#     features_nonzero = total number of non-empty attributes accroos all nodes, for example, node0 has 5 non-empty attribute, node1 has 10, and so on. It is the sum of these counts for all nodes.
+#     adj = adj metrics for training edges only, bidirectional, cora = 2708 * 2708
+#     num_features = number of attributes of each node, for cora = 1433
+#     num_nodes = number of nodes in training data, cora = 2708
+#     features_nonzero = total number of non-empty attributes accroos all nodes, for example, node0 has 5 non-empty attribute, 
+#                        node1 has 10, and so on. It is the sum of these counts for all nodes. 
+#                        This integer for cora = 49216 
 #     pos_weight = Total cells of adj (adj_train) where the value is zero / Total cells of adj (adj_train) where the value is one
 #     norm = Total cells of adj (adj_train) / (num of zero cells * 2)
 #     adj_norm = normalized adjacency matrix with self loops in sparse_to_tuple format (may be related to GCN)
 #     adj_label = TODO coordinates, values and shapes of sum(adj_train + putting 1's in all diagonal cels of adj_train) i.e. add self loop to adj_train
 #     features = attributes of all nodes in tocoo format, it contains three lists, row, col, and data
-#     true_labels = reverse one-hot of all nodes, an array of size num_nodes, for cora size is 2708
+#     true_labels = Labels are cluster identity. true_labels are reverse one-hot of all nodes, an array of size num_nodes, 
+#                   It indicates which cluster each node belong. Example, [3 4 ... 4] means, node0 is in cluster 3. 
+#                   For cora its an array of size = 2708
 #     train_edges = a list of pairs containing 85% edges i.e. excluding the test and validation edges, one-directional, type: list of list
-#     val_edges = a list of pairs containing randomly selected 5% edges, one-directional, type: list of list
+#                   For cora its shape = (4488, 2)
+#     val_edges = a list of pairs containing randomly selected 5% edges, one-directional, type: list of list. For cora its size = (263, 2)
 #     val_edges_false = random unique fake edges of same size of val_edges that does not contain in train set and validation set
 #     test_edges = a list of pairs containing randomly selected 10% edges, one-directional, type: list of list
 #     test_edges_false = random unique fake edges of same size of test_edges that does not contain in the whole edge dataset
@@ -80,9 +85,9 @@ def format_data(data_name):
     num_nodes = adj.shape[0]
 
     features = sparse_to_tuple(features.tocoo())
-    # print(features[0].shape)  # (49216, 2)
-    # print(features[1].shape) # [1, 1, ...., 1] of length 49216
-    # print(features[2]) # (2708, 1433)
+    # print(features[0].shape)  # (49216, 2) # row, column
+    # print(features[1].shape) # [1, 1, ...., 1] of length 49216 # data
+    # print(features[2]) # (2708, 1433) # metadata
     num_features = features[2][1] # 1433
     features_nonzero = features[1].shape[0] # 49216
 
