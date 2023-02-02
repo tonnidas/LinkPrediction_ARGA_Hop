@@ -22,12 +22,15 @@ class Clustering_Runner():
         self.iteration =settings['iterations']
         self.model = settings['model']
         self.n_clusters = settings['clustering_num']
+        self.n_hop_enable = settings['n_hop_enable']
+        self.hop_count = settings['hop_count']
+
 
     def erun(self):
         model_str = self.model
 
         # formatted data
-        feas = format_data(self.data_name)
+        feas = format_data(self.data_name, self.n_hop_enable, self.hop_count)
 
         # Define placeholders
         placeholders = get_placeholder(feas['adj'])

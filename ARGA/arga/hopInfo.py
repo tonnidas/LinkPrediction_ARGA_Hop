@@ -14,6 +14,7 @@ from sklearn.svm import SVC
 from collections import defaultdict
 from scipy import sparse
 
+
 def getNHopNeighbors(node, hop, adjList): # It is simply a bfs till nhop, not on whole graph
     neighborsTillHop, n_neighbors = set(), {node}
 
@@ -39,14 +40,14 @@ def convert(numNodes, adj):
                     adjList[i].append(j)
     return adjList
 
-def addHopFeatures(features, adj):
+def addHopFeatures(features, adj, hop_count):
     print('features_n_hop start')
 
     numNodes = features.shape[0]
 
     adjList = convert(numNodes, adj)
 
-    n_hop_neighbors = 1
+    n_hop_neighbors = hop_count
 
     Vertices_attributes_oneHot = pd.DataFrame.sparse.from_spmatrix(features)
 
@@ -66,4 +67,31 @@ def addHopFeatures(features, adj):
     print('features_n_hop done')
 
     return features_n_hop
+
+def addHopAdjacency(adj, hop_count):
+    print('adjacency_n_hop start')
+    print("---------------------")
+
+    numNodes = adj.shape[0]           # 6271 for mmu
+    print('numNodes:', numNodes)
+
+    adjList = convert(numNodes, adj)
+
+    n_hop_neighbors = hop_count
+
+    nHopAdj = np.zeros((numNodes, numNodes), dtype=int)
+
+    for eachNode in range(numNodes):
+        Immediate_friends_Nodes = getNHopNeighbors(eachNode, n_hop_neighbors, adjList) # gets a list of adjacent nodes till n hop
+
+        for friends_Node in Immediate_friends_Nodes:
+            nHopAdj[eachNode][friends_Node] = 1
+
+    nHopAdj = sparse.csr_matrix(nHopAdj) # convert to sparse matrix
+
+    # with open('KEGG_pickles/adj_n_hop.pickle', 'wb') as handle: pickle.dump(nHopAdj, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    
+    print('adj_n_hop done')
+
+    return nHopAdj
     

@@ -6,8 +6,9 @@ from optimizer import OptimizerAE, OptimizerVAE
 import scipy.sparse as sp
 from input_data import load_data
 import inspect
+import pickle
 from preprocessing import preprocess_graph, sparse_to_tuple, mask_test_edges, construct_feed_dict
-from hopInfo import addHopFeatures
+from hopInfo import addHopFeatures, addHopAdjacency
 flags = tf.app.flags
 FLAGS = flags.FLAGS
 
@@ -63,10 +64,22 @@ def get_model(model_str, placeholders, num_features, num_nodes, features_nonzero
 #     test_edges = a list of pairs containing randomly selected 10% edges, one-directional, type: list of list
 #     test_edges_false = random unique fake edges of same size of test_edges that does not contain in the whole edge dataset
 #     adj_orig = TODO adj metrics without self loop and zero rows, for cora size is (2708, 2708) since it does not have any all-zero row
-def format_data(data_name):
+def format_data(data_name, n_hop_enable, hop_count):
     # Load data
     adj, features, y_test, tx, ty, test_maks, true_labels = load_data(data_name)
-    features = addHopFeatures(features, adj) # Author: Tonni
+
+    # with open('adj_UNC28.pickle', 'rb') as handle: adj = pickle.load(handle)             # Author: Tonni
+    # FLAGS.features = 0                                                                   # Author: Tonni
+    # print("American75 loaded")                                                           # Author: Tonni
+
+    # Apply method to get information till n_hop if "n_hop_enable" is true
+    if n_hop_enable: 
+        features = addHopFeatures(features, adj, hop_count)    # Author: Tonni
+        adj = sp.csr_matrix(adj)
+        adj = addHopAdjacency(adj, hop_count + 1)
+        # print("features loading from pickle .....")
+        # with open('pickles/pubmed_features_hop_3.pickle', 'rb') as handle: features = pickle.load(handle) 
+        # with open('pickles/pubmed_adj_hop_3.pickle', 'rb') as handle: adj = pickle.load(handle) 
 
     # Store original adjacency matrix (without diagonal entries) for later
     adj_orig = adj
@@ -77,7 +90,8 @@ def format_data(data_name):
     adj = adj_train
 
     if FLAGS.features == 0:
-        features = sp.identity(features.shape[0])  # featureless
+        features = sp.identity(adj.shape[0])   # featureless
+        print("features.shape = ", features.shape)
 
     # Some preprocessing
     adj_norm = preprocess_graph(adj) # Makes sparse to tuple, size of each element(numpy array) in tuple = 11684, normalized
@@ -102,6 +116,7 @@ def format_data(data_name):
         # item_name = [ k for k,v in locals().iteritems() if v == item][0]
         feas[retrieve_name(item)] = item
 
+    feas["num_features"] = num_features # temporary fix
 
     return feas
 

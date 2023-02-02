@@ -31,7 +31,7 @@ seed = 7
 np.random.seed(seed)
 tf.set_random_seed(seed)
 
-def get_settings(dataname, model, task):
+def get_settings(dataname, model, task, n_hop_enable, hop_count):
     if dataname != 'citeseer' and dataname != 'cora' and dataname != 'pubmed':
         print('error: wrong data set name')
     if model != 'arga_ae' and model != 'arga_vae':
@@ -42,10 +42,10 @@ def get_settings(dataname, model, task):
     if task == 'clustering':
         iterations = FLAGS.iterations
         clustering_num = infor[dataname]
-        re = {'data_name': dataname, 'iterations' : iterations, 'clustering_num' :clustering_num, 'model' : model}
+        re = {'data_name': dataname, 'iterations' : iterations, 'clustering_num' :clustering_num, 'model' : model, 'n_hop_enable' : n_hop_enable, 'hop_count' : hop_count}
     elif task == 'link_prediction':
         iterations = 4 * FLAGS.iterations
-        re = {'data_name': dataname, 'iterations' : iterations,'model' : model}
-
+        re = {'data_name': dataname, 'iterations' : iterations,'model' : model, 'n_hop_enable' : n_hop_enable, 'hop_count' : hop_count}
+    
     return re
 
