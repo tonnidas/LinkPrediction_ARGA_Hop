@@ -1,3 +1,6 @@
-.DS_Store
+__pycache__/
+pickles/
+venv/
+*.pickle
 *.pyc
-venv
+.DS_Store
