@@ -11,4 +11,4 @@ python -V
 
 # Run python script
 cd ARGA/arga
-python run.py
+python make_hopped_info.py -- --dataname=citeseer --hop=2
